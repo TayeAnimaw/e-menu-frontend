@@ -9,3 +9,16 @@ export const API_BASE_URL = 'http://127.0.0.1:8000/api'
 // Set to null to disable subdomain-based tenant detection (path-based
 // routing via /menu/:subdomain and /admin will still work).
 export const BASE_DOMAIN = 'menu.com'
+
+// Suggested dietary tags shown when editing menu items. Owners can still
+// type any custom tag.
+export const DIETARY_TAG_PRESETS = [
+  'vegan',
+  'vegetarian',
+  'gluten-free',
+  'dairy-free',
+  'nut-free',
+  'halal',
+  'keto',
+  'spicy',
+]
