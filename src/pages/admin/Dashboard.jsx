@@ -62,7 +62,7 @@ export default function Dashboard() {
   if (loading) return <PageSpinner />;
   if (!data) return null;
 
-  const { user, categories_count, menu_items_count } = data;
+  const { user, categories_count, menu_items_count, last_payment } = data;
   const public_menu_url = publicMenuUrl(user.subdomain);
   const isActive = user.subscription_status === "active";
   const isExpired =
@@ -74,6 +74,9 @@ export default function Dashboard() {
     : null;
 
   const trialEndsAt = user.trial_ends_at ? new Date(user.trial_ends_at) : null;
+
+  const paidAt = last_payment?.paid_at ? new Date(last_payment.paid_at) : null;
+  const fmt = (d) => d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
 
   return (
     <div className="space-y-6">
@@ -142,17 +145,18 @@ export default function Dashboard() {
         {isTrial && trialEndsAt && (
           <p className="mt-3 text-sm text-ink-500">
             Trial ends on{" "}
-            <span className="font-medium text-ink-700">
-              {trialEndsAt.toLocaleDateString()}
-            </span>
+            <span className="font-medium text-ink-700">{fmt(trialEndsAt)}</span>
           </p>
         )}
-        {isActive && subscriptionEndsAt && (
+        {isActive && subscriptionEndsAt && user.subscription_plan !== "lifetime" && (
           <p className="mt-3 text-sm text-ink-500">
-            Active subscription — renews by{" "}
-            <span className="font-medium text-ink-700">
-              {subscriptionEndsAt.toLocaleDateString()}
-            </span>
+            Active until{" "}
+            <span className="font-medium text-ink-700">{fmt(subscriptionEndsAt)}</span>
+          </p>
+        )}
+        {isActive && user.subscription_plan === "lifetime" && (
+          <p className="mt-3 text-sm text-ink-500">
+            <span className="font-medium text-ink-700">Lifetime plan</span> — never expires
           </p>
         )}
 
@@ -184,48 +188,80 @@ export default function Dashboard() {
           Subscription
         </h2>
 
+        {/* Status summary block */}
         {isActive && (
-          <p className="mt-2 text-sm text-ink-500">
-            Your subscription is{" "}
-            <span className="font-medium text-green-600">active</span>.
-            {subscriptionEndsAt && (
-              <> Expires on {subscriptionEndsAt.toLocaleDateString()}.</>
-            )}
-          </p>
+          <div className="mt-3 rounded-xl bg-green-50 px-4 py-3 ring-1 ring-green-200">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-green-500 px-2.5 py-0.5 text-xs font-semibold text-white capitalize">
+                {user.subscription_plan || "active"}
+              </span>
+              <span className="text-sm font-medium text-green-800">
+                Subscription active
+              </span>
+            </div>
+            <div className="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-2">
+              {paidAt && (
+                <p className="text-sm text-green-700">
+                  <span className="text-green-500">Paid on </span>
+                  <span className="font-semibold">{fmt(paidAt)}</span>
+                  {last_payment?.amount && (
+                    <span className="ml-1 text-green-600">
+                      · ETB {last_payment.amount.toLocaleString()}
+                    </span>
+                  )}
+                </p>
+              )}
+              {subscriptionEndsAt && user.subscription_plan !== "lifetime" && (
+                <p className="text-sm text-green-700">
+                  <span className="text-green-500">Active until </span>
+                  <span className="font-semibold">{fmt(subscriptionEndsAt)}</span>
+                  <span className="ml-1 text-green-600">
+                    · {Math.max(0, Math.ceil((subscriptionEndsAt - new Date()) / 86400000))}d left
+                  </span>
+                </p>
+              )}
+              {user.subscription_plan === "lifetime" && (
+                <p className="text-sm text-green-700">
+                  <span className="text-green-500">Valid </span>
+                  <span className="font-semibold">forever — lifetime plan</span>
+                </p>
+              )}
+            </div>
+          </div>
         )}
 
         {isTrial && (
-          <p className="mt-2 text-sm text-ink-500">
-            You are on a free trial.
-            {trialEndsAt && (
-              <>
-                {" "}
-                {Math.max(
-                  0,
-                  Math.ceil((trialEndsAt - new Date()) / 86400000)
-                )}{" "}
-                days remaining.
-              </>
-            )}{" "}
-            Subscribe now to keep your menu active after the trial ends.
-          </p>
+          <div className="mt-3 rounded-xl bg-brand-50 px-4 py-3 ring-1 ring-brand-200">
+            <p className="text-sm font-medium text-brand-800">
+              Free trial
+              {trialEndsAt && (
+                <>
+                  {" "}· ends <span className="font-semibold">{fmt(trialEndsAt)}</span>
+                  {" "}({Math.max(0, Math.ceil((trialEndsAt - new Date()) / 86400000))}d left)
+                </>
+              )}
+            </p>
+            <p className="mt-0.5 text-xs text-brand-600">
+              Subscribe below to keep your menu active after the trial ends.
+            </p>
+          </div>
         )}
 
         {isExpired && (
-          <p className="mt-2 text-sm text-red-600">
-            Your trial has expired. Subscribe to re-enable menu editing.
-          </p>
+          <div className="mt-3 rounded-xl bg-red-50 px-4 py-3 ring-1 ring-red-200">
+            <p className="text-sm font-medium text-red-700">
+              Trial expired — subscribe to re-enable menu editing.
+            </p>
+          </div>
         )}
 
-        {user.subscription_plan === "lifetime" && isActive ? (
-          <p className="mt-2 text-sm text-ink-500">
-            You're on the{" "}
-            <span className="font-medium text-ink-700">Lifetime</span> plan —
-            your menu stays active forever. No further payment needed.
-          </p>
-        ) : (
+        {/* Payment plans — hide only for lifetime active users */}
+        {!(user.subscription_plan === "lifetime" && isActive) && (
           <>
-            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            <p className="mt-4 mb-3 text-xs font-medium uppercase tracking-wide text-ink-400">
+              {isActive ? "Extend or upgrade" : "Choose a plan"}
+            </p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
               {PLANS.map((plan) => (
                 <button
                   key={plan.key}
@@ -259,8 +295,7 @@ export default function Dashboard() {
         )}
 
         <p className="mt-4 text-xs text-ink-500">
-          Secure payment· Ethiopian payment gateway · Your menu stays live until
-          subscription ends.
+          Secure payment · Ethiopian payment gateway · Your menu stays live until subscription ends.
         </p>
       </div>
     </div>
