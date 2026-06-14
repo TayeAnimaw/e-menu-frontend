@@ -2,13 +2,12 @@
 // Update these two values when deploying (e.g. on cPanel).
 
 // Base URL of the Laravel API, including the "/api" prefix.
-export const API_BASE_URL = 'http://127.0.0.1:8000/api'
+export const API_BASE_URL = 'https://menuadmin.ethioserve.com/api'
 
-// Root domain menu owners are given subdomains under, e.g. "menu.com"
-// results in tenants being reachable at "{subdomain}.menu.com".
-// Set to null to disable subdomain-based tenant detection (path-based
-// routing via /menu/:subdomain and /admin will still work).
-export const BASE_DOMAIN = 'menu.com'
+// Set to null because ethioserve.com hosts other projects — a wildcard DNS
+// record would conflict. Tenant menus are served at the path-based URL:
+// https://menufront.ethioserve.com/menu/{subdomain}
+export const BASE_DOMAIN = null
 
 // Suggested dietary tags shown when editing menu items. Owners can still
 // type any custom tag.

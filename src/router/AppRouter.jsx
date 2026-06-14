@@ -9,6 +9,7 @@ import RegisterPage from '../pages/auth/RegisterPage'
 import GoogleCallback from '../pages/auth/GoogleCallback'
 import AdminLayout from '../pages/admin/AdminLayout'
 import Dashboard from '../pages/admin/Dashboard'
+import SuperAdminDashboard from '../pages/admin/SuperAdminDashboard'
 import Categories from '../pages/admin/Categories'
 import MenuItems from '../pages/admin/MenuItems'
 import Preview from '../pages/admin/Preview'
@@ -26,6 +27,7 @@ const adminRoutes = (
     }
   >
     <Route index element={<Dashboard />} />
+    <Route path="analytics" element={<SuperAdminDashboard />} />
     <Route path="categories" element={<Categories />} />
     <Route path="menu-items" element={<MenuItems />} />
     <Route path="preview" element={<Preview />} />

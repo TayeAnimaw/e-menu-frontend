@@ -10,7 +10,7 @@ const FAQS = [
   {
     question: "How do customers see my menu?",
     answer:
-      "Your menu is published at your public link, shown on the Dashboard (e.g. yoursubdomain.menu.com). Share that link or QR code with your customers.",
+      "Your menu is published at your public link, shown on the Dashboard (e.g. menufront.ethioserve.com/menu/yoursubdomain). Share that link or QR code with your customers.",
   },
   {
     question: "What happens after my free trial ends?",

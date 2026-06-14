@@ -5,24 +5,33 @@ import TrialPopup from "../../components/TrialPopup";
 import ProfileMenu from "../../components/ProfileMenu";
 import SiteFooter from "../../components/SiteFooter";
 
-const NAV_ITEMS = [
+const OWNER_NAV = [
   { to: "/admin", label: "Dashboard", end: true },
   { to: "/admin/categories", label: "Categories" },
   { to: "/admin/menu-items", label: "Menu Items" },
   { to: "/admin/preview", label: "Preview Menu" },
 ];
 
+const SUPER_ADMIN_NAV = [
+  { to: "/admin", label: "Dashboard", end: true },
+  { to: "/admin/analytics", label: "Analytics" },
+];
+
 export default function AdminLayout() {
   const { user } = useAuth();
+  const isSuperAdmin = user?.role === 'super_admin';
+  const NAV_ITEMS = isSuperAdmin ? SUPER_ADMIN_NAV : OWNER_NAV;
 
   return (
     <div className="bg-menu-pattern-light min-h-screen bg-ink-50 lg:flex">
       {/* Sidebar (desktop) */}
       <aside className="hidden w-64 flex-col border-r border-ink-100 bg-white/80 px-4 py-6 backdrop-blur-sm lg:flex">
         <div className="px-2 font-display text-lg font-semibold text-brand-700">
-          {user?.cafe_name || "E-Menu"}
+          {isSuperAdmin ? "E-Menu Admin" : (user?.cafe_name || "E-Menu")}
         </div>
-        <p className="px-2 text-xs text-ink-500">{user?.subdomain}.menu.com</p>
+        <p className="px-2 text-xs text-ink-500">
+          {isSuperAdmin ? "Super Admin" : `menufront.ethioserve.com/menu/${user?.subdomain}`}
+        </p>
 
         <nav className="mt-6 flex flex-col gap-1">
           {NAV_ITEMS.map((item) => (
@@ -33,7 +42,7 @@ export default function AdminLayout() {
               className={({ isActive }) =>
                 `rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 ${
                   isActive
-                    ? "bg-gradient-to-br from-brand-50 to-brand-100 text-brand-700"
+                    ? "bg-linear-to-br from-brand-50 to-brand-100 text-brand-700"
                     : "text-ink-600 hover:bg-ink-50"
                 }`
               }
@@ -51,7 +60,7 @@ export default function AdminLayout() {
             <div className="font-display text-base font-semibold text-brand-700">
               {user?.cafe_name || "E-Menu"}
             </div>
-            <p className="text-xs text-ink-500">{user?.subdomain}.menu.com</p>
+            <p className="text-xs text-ink-500">menufront.ethioserve.com/menu/{user?.subdomain}</p>
           </div>
           <div className="hidden lg:block" />
           <ProfileMenu user={user} />

@@ -132,7 +132,7 @@ export default function Profile() {
               <p className="mt-1 text-xs text-red-600">{fieldError('cafe_name')}</p>
             )}
             <p className="mt-1 text-xs text-ink-500">
-              Your menu link ({user?.subdomain}.menu.com) stays the same.
+              Your menu link (menufront.ethioserve.com/menu/{user?.subdomain}) stays the same.
             </p>
           </div>
 
