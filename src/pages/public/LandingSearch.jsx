@@ -532,7 +532,7 @@ export default function LandingSearch() {
             </div>
             <div className="mt-8 border-t border-ink-100 pt-6 text-center text-xs text-ink-400">
               © {new Date().getFullYear()} E-Menu · Powered by{" "}
-              <a href="https://tayeanimaw.com" target="_blank" rel="noreferrer" className="font-semibold text-brand-600 hover:underline">
+              <a href="https://t.me/JustListenNow" target="_blank" rel="noreferrer" className="font-semibold text-brand-600 hover:underline">
                 Taye Animaw
               </a>
             </div>

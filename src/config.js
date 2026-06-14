@@ -9,6 +9,15 @@ export const API_BASE_URL = 'https://menuadmin.ethioserve.com/api'
 // https://menufront.ethioserve.com/menu/{subdomain}
 export const BASE_DOMAIN = null
 
+// Root URL where public menus are served (the React frontend host).
+export const MENU_FRONTEND_URL = 'https://menufront.ethioserve.com'
+
+// Build the public-facing menu link for a given subdomain.
+export function publicMenuUrl(subdomain) {
+  if (BASE_DOMAIN) return `https://${subdomain}.${BASE_DOMAIN}`
+  return `${MENU_FRONTEND_URL}/menu/${subdomain}`
+}
+
 // Suggested dietary tags shown when editing menu items. Owners can still
 // type any custom tag.
 export const DIETARY_TAG_PRESETS = [

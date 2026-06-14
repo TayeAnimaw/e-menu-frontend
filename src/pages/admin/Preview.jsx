@@ -11,7 +11,7 @@ export default function Preview() {
       <div className="bg-gradient-to-br from-brand-600 to-brand-700 px-4 py-2.5 text-center text-xs font-medium uppercase tracking-wide text-white">
         Preview — this is what customers see at menufront.ethioserve.com/menu/{user.subdomain}
       </div>
-      <MenuPage subdomain={user.subdomain} />
+      <MenuPage subdomain={user.subdomain} hideFooter />
     </div>
   )
 }

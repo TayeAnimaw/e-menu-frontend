@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import apiClient from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
 import { PageSpinner } from "../../components/Spinner";
@@ -25,10 +25,16 @@ export default function MenuItems() {
   const [loading, setLoading] = useState(true);
   const [form, setForm] = useState(emptyForm);
   const [imageFile, setImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [editingImageUrl, setEditingImageUrl] = useState(null);
+  const [removeImage, setRemoveImage] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
   const [filterCategory, setFilterCategory] = useState("all");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const formRef = useRef(null);
 
   const load = () => {
     setLoading(true);
@@ -50,8 +56,31 @@ export default function MenuItems() {
   const resetForm = () => {
     setForm(emptyForm);
     setImageFile(null);
+    setImagePreview(null);
+    setEditingImageUrl(null);
+    setRemoveImage(false);
     setEditingId(null);
     setError("");
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+    setRemoveImage(false);
+  };
+
+  const clearSelectedFile = () => {
+    setImageFile(null);
+    setImagePreview(null);
+  };
+
+  const handleRemoveExistingImage = () => {
+    setEditingImageUrl(null);
+    setImageFile(null);
+    setImagePreview(null);
+    setRemoveImage(true);
   };
 
   const toggleTag = (tag) => {
@@ -77,7 +106,11 @@ export default function MenuItems() {
       payload.append("is_available", form.is_available ? "1" : "0");
       payload.append("sort_order", form.sort_order);
       form.tags.forEach((tag) => payload.append("tags[]", tag));
-      if (imageFile) payload.append("image", imageFile);
+      if (imageFile) {
+        payload.append("image", imageFile);
+      } else if (removeImage) {
+        payload.append("remove_image", "1");
+      }
 
       if (editingId) {
         await apiClient.post(`/admin/menu-items/${editingId}`, payload);
@@ -105,14 +138,30 @@ export default function MenuItems() {
       sort_order: item.sort_order,
     });
     setImageFile(null);
+    setImagePreview(null);
+    setEditingImageUrl(item.image_url || null);
+    setRemoveImage(false);
     setError("");
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   };
 
-  const handleDelete = async (item) => {
-    if (!window.confirm(`Delete "${item.name}"?`)) return;
-    await apiClient.delete(`/admin/menu-items/${item.id}`);
-    if (editingId === item.id) resetForm();
-    load();
+  const handleDeleteClick = (item) => {
+    setDeleteTarget(item);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+    setDeleteLoading(true);
+    try {
+      await apiClient.delete(`/admin/menu-items/${deleteTarget.id}`);
+      if (editingId === deleteTarget.id) resetForm();
+      load();
+    } finally {
+      setDeleteLoading(false);
+      setDeleteTarget(null);
+    }
   };
 
   if (loading) return <PageSpinner />;
@@ -149,9 +198,20 @@ export default function MenuItems() {
 
       {canEdit && categories.length > 0 && (
         <form
+          ref={formRef}
           onSubmit={handleSubmit}
-          className="space-y-4 rounded-2xl bg-white p-4 shadow-lg ring-1 ring-ink-100"
+          className={`space-y-4 rounded-2xl bg-white p-4 shadow-lg ring-1 transition-all ${
+            editingId ? "ring-brand-400 shadow-brand-100" : "ring-ink-100"
+          }`}
         >
+          {editingId && (
+            <div className="flex items-center gap-2 rounded-lg bg-brand-50 px-3 py-2 text-sm font-medium text-brand-700 ring-1 ring-brand-200">
+              <svg className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Z" />
+              </svg>
+              Editing menu item — make your changes and click Save
+            </div>
+          )}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div>
               <label className="block text-sm font-medium text-ink-700">
@@ -239,12 +299,64 @@ export default function MenuItems() {
               <label className="block text-sm font-medium text-ink-700">
                 Image
               </label>
-              <input
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
-                onChange={(e) => setImageFile(e.target.files?.[0] || null)}
-                className="mt-1 w-full text-sm"
-              />
+
+              {/* Preview: newly selected file */}
+              {imagePreview && (
+                <div className="mt-2 flex items-start gap-3">
+                  <div className="relative shrink-0">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="h-20 w-20 rounded-xl object-cover ring-1 ring-ink-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={clearSelectedFile}
+                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow hover:bg-red-600"
+                      title="Remove selected file"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <p className="mt-1 text-xs text-ink-500">
+                    New image selected.<br />Click × to cancel.
+                  </p>
+                </div>
+              )}
+
+              {/* Preview: existing image when editing (no new file chosen) */}
+              {!imagePreview && editingImageUrl && (
+                <div className="mt-2 flex items-start gap-3">
+                  <div className="relative shrink-0">
+                    <img
+                      src={editingImageUrl}
+                      alt="Current"
+                      className="h-20 w-20 rounded-xl object-cover ring-1 ring-ink-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveExistingImage}
+                      className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-white shadow hover:bg-red-600"
+                      title="Remove image"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  <p className="mt-1 text-xs text-ink-500">
+                    Current image.<br />Click × to remove, or pick a new file below.
+                  </p>
+                </div>
+              )}
+
+              {/* File input — hidden once a new file is staged */}
+              {!imagePreview && (
+                <input
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handleImageChange}
+                  className="mt-2 w-full text-sm"
+                />
+              )}
             </div>
           </div>
 
@@ -384,7 +496,7 @@ export default function MenuItems() {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(item)}
+                    onClick={() => handleDeleteClick(item)}
                     className="rounded-full bg-red-50 px-3.5 py-1.5 text-xs font-medium text-red-600 transition hover:bg-red-100"
                   >
                     Delete
@@ -395,6 +507,47 @@ export default function MenuItems() {
           </div>
         ))}
       </div>
+
+      {/* Delete confirmation modal */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-900/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl ring-1 ring-ink-100">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+              <svg className="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+              </svg>
+            </div>
+            <h3 className="font-display mt-4 text-lg font-semibold text-ink-900">
+              Delete menu item?
+            </h3>
+            <p className="mt-2 text-sm text-ink-500">
+              Are you sure you want to delete{" "}
+              <span className="font-semibold text-ink-800">
+                &ldquo;{deleteTarget.name}&rdquo;
+              </span>
+              ? This action cannot be undone.
+            </p>
+            <div className="mt-5 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleteLoading}
+                className="flex-1 rounded-full bg-ink-100 px-4 py-2.5 text-sm font-semibold text-ink-700 transition hover:bg-ink-200 disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmDelete}
+                disabled={deleteLoading}
+                className="flex-1 rounded-full bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-red-700 disabled:opacity-60"
+              >
+                {deleteLoading ? "Deleting…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -5,24 +5,27 @@ import MenuItemCard from "../../components/MenuItemCard";
 import MenuItemCardSkeleton from "../../components/MenuItemCardSkeleton";
 import SiteFooter from "../../components/SiteFooter";
 
-export default function MenuPage({ subdomain }) {
+export default function MenuPage({ subdomain, hideFooter = false }) {
   const [menu, setMenu] = useState(null);
   const [status, setStatus] = useState("loading"); // loading | ready | not-found | error
-  const [activeCategory, setActiveCategory] = useState(null);
+  const [activeCategory, setActiveCategory] = useState(null); // null = All
   const [search, setSearch] = useState("");
+  const [sortPrice, setSortPrice] = useState("none"); // none | asc | desc
 
   useEffect(() => {
     let cancelled = false;
 
     setStatus("loading");
     setMenu(null);
+    setActiveCategory(null);
+    setSearch("");
+    setSortPrice("none");
 
     apiClient
       .get(`/menu/${subdomain}`)
       .then(({ data }) => {
         if (cancelled) return;
         setMenu(data);
-        setActiveCategory(data.categories[0]?.id ?? null);
         setStatus("ready");
       })
       .catch((error) => {
@@ -35,9 +38,9 @@ export default function MenuPage({ subdomain }) {
     };
   }, [subdomain]);
 
+  // Filter categories/items by search query
   const filteredCategories = useMemo(() => {
     if (!menu) return [];
-
     const query = search.trim().toLowerCase();
     if (!query) return menu.categories;
 
@@ -52,6 +55,25 @@ export default function MenuPage({ subdomain }) {
       }))
       .filter((category) => category.items.length > 0);
   }, [menu, search]);
+
+  // Items to display based on active category + search
+  const baseItems = useMemo(() => {
+    if (search.trim()) {
+      return filteredCategories.flatMap((c) => c.items);
+    }
+    if (activeCategory === null) {
+      return filteredCategories.flatMap((c) => c.items);
+    }
+    return filteredCategories.find((c) => c.id === activeCategory)?.items ?? [];
+  }, [filteredCategories, activeCategory, search]);
+
+  // Apply price sort on top
+  const itemsToShow = useMemo(() => {
+    if (sortPrice === "none") return baseItems;
+    return [...baseItems].sort((a, b) =>
+      sortPrice === "asc" ? a.price - b.price : b.price - a.price
+    );
+  }, [baseItems, sortPrice]);
 
   if (status === "loading") {
     return (
@@ -95,19 +117,10 @@ export default function MenuPage({ subdomain }) {
     );
   }
 
-  const activeItems =
-    filteredCategories.find((c) => c.id === activeCategory)?.items ?? [];
-  const displayedCategories = search.trim()
-    ? filteredCategories
-    : filteredCategories.filter((c) => c.id === activeCategory);
-  const itemsToShow = search.trim()
-    ? filteredCategories.flatMap((c) => c.items)
-    : activeItems;
-
   return (
     <div className="bg-menu-pattern-light min-h-screen bg-ink-50 pb-12">
       {/* Header */}
-      <header className="sticky top-0 z-20 border-b border-ink-100 bg-white/80 px-4 pb-5 pt-7 text-ink-900 shadow-sm backdrop-blur-sm sm:px-6">
+      <header className="sticky top-0 z-20 border-b border-ink-100 bg-white/80 px-4 pb-3 pt-7 text-ink-900 shadow-sm backdrop-blur-sm sm:px-6">
         <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-4xl">
           {menu.cafe.name}
         </h1>
@@ -122,11 +135,35 @@ export default function MenuPage({ subdomain }) {
             className="w-full rounded-full border border-ink-200 bg-ink-50 px-4 py-2.5 text-sm text-ink-900 shadow-inner placeholder:text-ink-500 focus:outline-none focus:ring-2 focus:ring-brand-400"
           />
         </div>
+
+        {/* Sort by price */}
+        <div className="mt-2.5 flex items-center gap-2">
+          <span className="text-xs font-medium text-ink-400">Sort:</span>
+          <div className="flex gap-1">
+            {[
+              { value: "none", label: "Default" },
+              { value: "asc",  label: "Price ↑" },
+              { value: "desc", label: "Price ↓" },
+            ].map((opt) => (
+              <button
+                key={opt.value}
+                onClick={() => setSortPrice(opt.value)}
+                className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                  sortPrice === opt.value
+                    ? "bg-brand-600 text-white shadow-sm"
+                    : "bg-ink-100 text-ink-500 hover:bg-ink-200"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
       </header>
 
-      {/* Category tabs */}
-      {!search.trim() && menu.categories.length > 0 && (
-        <div className="sticky top-[110px] z-10 border-b border-ink-100 bg-ink-50/95 backdrop-blur sm:top-[124px]">
+      {/* Category tabs — always shown (includes "All") */}
+      {menu.categories.length > 0 && !search.trim() && (
+        <div className="sticky top-37 z-10 border-b border-ink-100 bg-ink-50/95 backdrop-blur sm:top-40.5">
           <CategoryTabs
             categories={menu.categories}
             activeId={activeCategory}
@@ -145,42 +182,25 @@ export default function MenuPage({ subdomain }) {
 
         {search.trim() && (
           <h2 className="mb-3 text-sm font-medium text-ink-500">
-            {itemsToShow.length} result{itemsToShow.length === 1 ? "" : "s"} for
-            "{search}"
+            {itemsToShow.length} result{itemsToShow.length === 1 ? "" : "s"}{" "}
+            for &ldquo;{search}&rdquo;
           </h2>
         )}
 
         {itemsToShow.length === 0 && menu.categories.length > 0 && (
           <p className="py-10 text-center text-ink-500">
-            No items match your search.
+            {search.trim() ? "No items match your search." : "No items in this category yet."}
           </p>
         )}
 
-        {!search.trim() ? (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {itemsToShow.map((item) => (
-              <MenuItemCard key={item.id} item={item} />
-            ))}
-          </div>
-        ) : (
-          <div className="space-y-6">
-            {displayedCategories.map((category) => (
-              <div key={category.id}>
-                <h3 className="font-display mb-2 text-sm font-semibold uppercase tracking-wide text-ink-500">
-                  {category.name}
-                </h3>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {category.items.map((item) => (
-                    <MenuItemCard key={item.id} item={item} />
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {itemsToShow.map((item) => (
+            <MenuItemCard key={item.id} item={item} />
+          ))}
+        </div>
       </main>
 
-      <SiteFooter className="py-4" />
+      {!hideFooter && <SiteFooter className="py-4" />}
     </div>
   );
 }

@@ -100,7 +100,7 @@ export default function AuthLayout({ title, subtitle, children, brandingExtra })
             </div>
             <p className="mt-4 text-center text-xs text-ink-400">
               © {new Date().getFullYear()} E-Menu · Powered by{" "}
-              <a href="https://tayeanimaw.com" target="_blank" rel="noreferrer" className="text-brand-600 hover:underline">
+              <a href="https://t.me/JustListenNow" target="_blank" rel="noreferrer" className="text-brand-600 hover:underline">
                 Taye Animaw
               </a>
             </p>

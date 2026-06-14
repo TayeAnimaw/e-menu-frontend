@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#f97316"/>
+      <stop offset="1" stop-color="#c2410c"/>
+    </linearGradient>
+  </defs>
+  <!-- Full-bleed background (maskable icons fill edge-to-edge; OS clips to shape) -->
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <!--
+    Safe zone: centred circle r=205 (40% of 512).
+    Content is kept within roughly x:140–372, y:90–422.
+    Fork centred at x=208, knife at x=304 — 96px apart.
+  -->
+  <!-- Fork: 3 tines -->
+  <line x1="184" y1="90"  x2="184" y2="195" stroke="white" stroke-width="26" stroke-linecap="round"/>
+  <line x1="208" y1="90"  x2="208" y2="195" stroke="white" stroke-width="26" stroke-linecap="round"/>
+  <line x1="232" y1="90"  x2="232" y2="195" stroke="white" stroke-width="26" stroke-linecap="round"/>
+  <!-- Fork: arch connecting tines into stem -->
+  <path d="M184 195 C184 238 232 238 232 195" stroke="white" stroke-width="26" stroke-linecap="round" fill="none"/>
+  <!-- Fork: stem -->
+  <line x1="208" y1="232" x2="208" y2="422" stroke="white" stroke-width="26" stroke-linecap="round"/>
+  <!-- Knife: straight spine -->
+  <line x1="304" y1="90"  x2="304" y2="422" stroke="white" stroke-width="26" stroke-linecap="round"/>
+  <!-- Knife: blade curve -->
+  <path d="M304 90 C352 114 358 176 304 232" stroke="white" stroke-width="26" stroke-linecap="round" fill="none"/>
+</svg>

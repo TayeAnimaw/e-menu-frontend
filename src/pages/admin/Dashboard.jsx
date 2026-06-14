@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import apiClient from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
 import { PageSpinner } from "../../components/Spinner";
+import { publicMenuUrl } from "../../config";
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
@@ -41,7 +42,15 @@ export default function Dashboard() {
       const { data } = await apiClient.post("/admin/subscription/pay", {
         plan,
       });
-      window.location.href = data.checkout_url;
+      const url = data?.checkout_url;
+      if (url && url.startsWith("https://")) {
+        window.location.href = url;
+      } else {
+        setPayError(
+          "Payment gateway returned an invalid URL. Please try again or contact support."
+        );
+        setPayLoading("");
+      }
     } catch (err) {
       setPayError(
         err.response?.data?.message || "Could not start payment. Try again."
@@ -53,7 +62,8 @@ export default function Dashboard() {
   if (loading) return <PageSpinner />;
   if (!data) return null;
 
-  const { user, categories_count, menu_items_count, public_menu_url } = data;
+  const { user, categories_count, menu_items_count } = data;
+  const public_menu_url = publicMenuUrl(user.subdomain);
   const isActive = user.subscription_status === "active";
   const isExpired =
     user.subscription_status === "expired" || user.trial_expired;
@@ -149,7 +159,7 @@ export default function Dashboard() {
         <div className="mt-4 flex flex-wrap gap-2">
           <Link
             to="/admin/categories"
-            className="rounded-full bg-gradient-to-br from-brand-600 to-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-brand-600/25 transition hover:from-brand-700 hover:to-brand-800"
+            className="rounded-full bg-linear-to-br from-brand-600 to-brand-700 px-4 py-2 text-sm font-semibold text-white shadow-md shadow-brand-600/25 transition hover:from-brand-700 hover:to-brand-800"
           >
             Manage categories
           </Link>
@@ -224,7 +234,7 @@ export default function Dashboard() {
                   className="flex flex-col items-start gap-1 rounded-2xl border border-ink-100 bg-ink-50 p-4 text-left transition hover:border-brand-300 hover:bg-brand-50 disabled:opacity-60"
                 >
                   {plan.highlight && (
-                    <span className="rounded-full bg-gradient-to-br from-brand-600 to-brand-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
+                    <span className="rounded-full bg-linear-to-br from-brand-600 to-brand-700 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
                       {plan.highlight}
                     </span>
                   )}
@@ -292,9 +302,9 @@ const PLANS = [
 ];
 
 const ACCENT_STYLES = {
-  brand: "bg-gradient-to-br from-brand-50 to-brand-100 text-brand-700",
-  emerald: "bg-gradient-to-br from-emerald-50 to-emerald-100 text-emerald-700",
-  sky: "bg-gradient-to-br from-sky-50 to-sky-100 text-sky-700",
+  brand: "bg-linear-to-br from-brand-50 to-brand-100 text-brand-700",
+  emerald: "bg-linear-to-br from-emerald-50 to-emerald-100 text-emerald-700",
+  sky: "bg-linear-to-br from-sky-50 to-sky-100 text-sky-700",
 };
 
 const ICONS = {
