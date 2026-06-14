@@ -120,26 +120,47 @@ export default function MenuPage({ subdomain, hideFooter = false }) {
   return (
     <div className="bg-menu-pattern-light min-h-screen bg-ink-50 pb-12">
       {/* Header */}
-      <header className="sticky top-0 z-20 border-b border-ink-100 bg-white/80 px-4 pb-3 pt-7 text-ink-900 shadow-sm backdrop-blur-sm sm:px-6">
-        <h1 className="font-display text-2xl font-semibold tracking-tight sm:text-4xl">
-          {menu.cafe.name}
-        </h1>
-        <p className="text-sm text-ink-500">Browse our menu</p>
+      <header className="sticky top-0 z-20 border-b border-ink-100 bg-white/90 px-4 pb-4 pt-5 shadow-sm backdrop-blur-sm sm:px-6">
 
-        <div className="mt-3">
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search dishes, drinks, dietary tags..."
-            className="w-full rounded-full border border-ink-200 bg-ink-50 px-4 py-2.5 text-sm text-ink-900 shadow-inner placeholder:text-ink-500 focus:outline-none focus:ring-2 focus:ring-brand-400"
-          />
+        {/* Cafe name row */}
+        <div className="flex items-start justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900 sm:text-4xl truncate">
+              {menu.cafe.name}
+            </h1>
+            <p className="mt-0.5 text-sm font-semibold text-emerald-600 tracking-wide">
+              የአገልግሎቶቻችንን ዝርዝሮች ይመልከቱ
+            </p>
+          </div>
+
+          {/* Welcome badge */}
+          <span className="shrink-0 flex items-center gap-1.5 rounded-full bg-linear-to-br from-emerald-50 to-teal-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200 shadow-sm">
+            <span className="text-base leading-none">🙏</span>
+            <span className="hidden sm:inline">እኛን ስለመረጡ እናመሰናለን</span>
+            <span className="sm:hidden">እናመሰናለን</span>
+          </span>
         </div>
 
-        {/* Sort by price */}
-        <div className="mt-2.5 flex items-center gap-2">
-          <span className="text-xs font-medium text-ink-400">Sort:</span>
-          <div className="flex gap-1">
+        {/* Search (left) + Sort (right) side by side */}
+        <div className="mt-3 flex items-center gap-2">
+          <div className="relative flex-1">
+            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-ink-400">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clipRule="evenodd" />
+              </svg>
+            </span>
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search dishes, drinks, dietary tags..."
+              className="w-full rounded-full border border-ink-200 bg-ink-50 py-2.5 pl-9 pr-4 text-sm text-ink-900 shadow-inner placeholder:text-ink-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-300"
+            />
+          </div>
+
+          {/* Sort pills */}
+          <div className="flex shrink-0 items-center gap-1">
+            <span className="hidden text-xs font-medium text-ink-400 sm:inline">Sort:</span>
             {[
               { value: "none", label: "Default" },
               { value: "asc",  label: "Price ↑" },
@@ -148,7 +169,7 @@ export default function MenuPage({ subdomain, hideFooter = false }) {
               <button
                 key={opt.value}
                 onClick={() => setSortPrice(opt.value)}
-                className={`rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                className={`rounded-full px-3 py-2 text-xs font-semibold transition-all ${
                   sortPrice === opt.value
                     ? "bg-brand-600 text-white shadow-sm"
                     : "bg-ink-100 text-ink-500 hover:bg-ink-200"
