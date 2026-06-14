@@ -136,7 +136,7 @@ export default function MenuPage({ subdomain, hideFooter = false }) {
         </div>
 
         {/* Subtitle — below both the cafe name and the badge */}
-        <p className="mt-1 text-sm font-semibold text-emerald-600 tracking-wide sm:text-base">
+        <p className="mt-1 text-xs italic font-medium text-emerald-600 tracking-wide sm:text-sm">
           የአገልግሎቶቻችንን ዝርዝሮች ይመልከቱ
         </p>
 
