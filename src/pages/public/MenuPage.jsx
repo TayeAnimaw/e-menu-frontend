@@ -128,24 +128,24 @@ export default function MenuPage({ subdomain, hideFooter = false }) {
             <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900 sm:text-4xl truncate">
               {menu.cafe.name}
             </h1>
-            <p className="mt-0.5 text-sm font-semibold text-emerald-600 tracking-wide">
+            <p className="mt-1 text-base font-semibold text-emerald-600 tracking-wide sm:text-lg">
               የአገልግሎቶቻችንን ዝርዝሮች ይመልከቱ
             </p>
           </div>
 
           {/* Welcome badge */}
-          <span className="shrink-0 flex items-center gap-1.5 rounded-full bg-linear-to-br from-emerald-50 to-teal-50 px-3 py-1.5 text-xs font-semibold text-emerald-700 ring-1 ring-emerald-200 shadow-sm">
-            <span className="text-base leading-none">🙏</span>
-            <span className="hidden sm:inline">እኛን ስለመረጡ እናመሰናለን</span>
-            <span className="sm:hidden">እናመሰናለን</span>
+          <span className="shrink-0 flex flex-col items-center gap-1 rounded-2xl bg-linear-to-br from-emerald-50 to-teal-50 px-4 py-2.5 text-center ring-1 ring-emerald-200 shadow-sm">
+            <span className="text-2xl leading-none">🙏</span>
+            <span className="text-sm font-bold text-emerald-700 sm:text-base">እኛን ስለመረጡ</span>
+            <span className="text-sm font-bold text-emerald-700 sm:text-base">እናመሰናለን</span>
           </span>
         </div>
 
         {/* Search (left) + Sort (right) side by side */}
-        <div className="mt-3 flex items-center gap-2">
+        <div className="mt-4 flex items-center gap-2">
           <div className="relative flex-1">
-            <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-ink-400">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+            <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-ink-400">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-5 w-5">
                 <path fillRule="evenodd" d="M9 3.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11ZM2 9a7 7 0 1 1 12.452 4.391l3.328 3.329a.75.75 0 1 1-1.06 1.06l-3.329-3.328A7 7 0 0 1 2 9Z" clipRule="evenodd" />
               </svg>
             </span>
@@ -153,26 +153,24 @@ export default function MenuPage({ subdomain, hideFooter = false }) {
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search dishes, drinks, dietary tags..."
-              className="w-full rounded-full border border-ink-200 bg-ink-50 py-2.5 pl-9 pr-4 text-sm text-ink-900 shadow-inner placeholder:text-ink-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-300"
+              placeholder="ምግቦችን፣ መጠጦችን ፈልጉ..."
+              className="w-full rounded-full border border-ink-200 bg-ink-50 py-3 pl-11 pr-4 text-base text-ink-900 shadow-inner placeholder:text-ink-400 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-300"
             />
           </div>
 
-          {/* Sort pills */}
-          <div className="flex shrink-0 items-center gap-1">
-            <span className="hidden text-xs font-medium text-ink-400 sm:inline">Sort:</span>
+          {/* Sort — two toggle buttons only (clicking active one resets to default) */}
+          <div className="flex shrink-0 items-center gap-1.5">
             {[
-              { value: "none", label: "Default" },
-              { value: "asc",  label: "Price ↑" },
-              { value: "desc", label: "Price ↓" },
+              { value: "asc",  label: "ዋጋ ↑" },
+              { value: "desc", label: "ዋጋ ↓" },
             ].map((opt) => (
               <button
                 key={opt.value}
-                onClick={() => setSortPrice(opt.value)}
-                className={`rounded-full px-3 py-2 text-xs font-semibold transition-all ${
+                onClick={() => setSortPrice(sortPrice === opt.value ? "none" : opt.value)}
+                className={`rounded-full px-4 py-3 text-sm font-bold transition-all ${
                   sortPrice === opt.value
-                    ? "bg-brand-600 text-white shadow-sm"
-                    : "bg-ink-100 text-ink-500 hover:bg-ink-200"
+                    ? "bg-brand-600 text-white shadow-md"
+                    : "bg-ink-100 text-ink-600 hover:bg-ink-200"
                 }`}
               >
                 {opt.label}
