@@ -122,22 +122,39 @@ export default function MenuPage({ subdomain, hideFooter = false }) {
       {/* Header */}
       <header className="sticky top-0 z-20 border-b border-ink-100 bg-white/90 px-4 pb-4 pt-5 shadow-sm backdrop-blur-sm sm:px-6">
 
-        {/* Cafe name row */}
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900 sm:text-4xl truncate">
-              {menu.cafe.name}
-            </h1>
-            <p className="mt-1 text-base font-semibold text-emerald-600 tracking-wide sm:text-lg">
-              የአገልግሎቶቻችንን ዝርዝሮች ይመልከቱ
-            </p>
+        {/* Top row: avatar + cafe name (left) | welcome badge (right) */}
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            {/* Avatar */}
+            {menu.cafe.avatar ? (
+              <img
+                src={menu.cafe.avatar}
+                alt={menu.cafe.name}
+                className="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-emerald-200 sm:h-14 sm:w-14"
+              />
+            ) : (
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-brand-500 to-brand-700 ring-2 ring-brand-200 sm:h-14 sm:w-14">
+                <span className="text-xl font-bold text-white sm:text-2xl">
+                  {(menu.cafe.name || "C")[0].toUpperCase()}
+                </span>
+              </div>
+            )}
+
+            {/* Cafe name + subtitle */}
+            <div className="min-w-0">
+              <h1 className="font-display text-2xl font-bold tracking-tight text-ink-900 truncate sm:text-3xl">
+                {menu.cafe.name}
+              </h1>
+              <p className="mt-0.5 text-sm font-semibold text-emerald-600 tracking-wide sm:text-base">
+                የአገልግሎቶቻችንን ዝርዝሮች ይመልከቱ
+              </p>
+            </div>
           </div>
 
-          {/* Welcome badge */}
-          <span className="shrink-0 flex flex-col items-center gap-1 rounded-2xl bg-linear-to-br from-emerald-50 to-teal-50 px-4 py-2.5 text-center ring-1 ring-emerald-200 shadow-sm">
-            <span className="text-2xl leading-none">🙏</span>
-            <span className="text-sm font-bold text-emerald-700 sm:text-base">እኛን ስለመረጡ</span>
-            <span className="text-sm font-bold text-emerald-700 sm:text-base">እናመሰናለን</span>
+          {/* Welcome badge — horizontal single row */}
+          <span className="shrink-0 flex items-center gap-2 rounded-full bg-linear-to-br from-emerald-50 to-teal-50 px-4 py-2.5 ring-1 ring-emerald-200 shadow-sm">
+            <span className="text-xl leading-none">🙏</span>
+            <span className="text-sm font-bold text-emerald-700 sm:text-base">እኛን ስለመረጡ እናመሰናለን</span>
           </span>
         </div>
 
