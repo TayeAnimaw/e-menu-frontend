@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import apiClient from "../../api/client";
 import CategoryTabs from "../../components/CategoryTabs";
 import MenuItemCard from "../../components/MenuItemCard";
@@ -128,11 +128,8 @@ export default function MenuPage({ subdomain, hideFooter = false }) {
             {menu.cafe.name}
           </h1>
 
-          {/* Welcome badge — horizontal single row */}
-          <span className="shrink-0 flex items-center gap-2 rounded-full bg-linear-to-br from-emerald-50 to-teal-50 px-4 py-2.5 ring-1 ring-emerald-200 shadow-sm">
-            <span className="text-xl leading-none">🙏</span>
-            <span className="text-sm font-bold text-emerald-700 sm:text-base">እኛን ስለመረጡ እናመሰናለን</span>
-          </span>
+          {/* Welcome badge — looping typewriter */}
+          <TypewriterBadge />
         </div>
 
         {/* Subtitle — below both the cafe name and the badge */}
@@ -211,14 +208,73 @@ export default function MenuPage({ subdomain, hideFooter = false }) {
           </p>
         )}
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          className="flex gap-4 overflow-x-auto pb-3 snap-x snap-mandatory"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
           {itemsToShow.map((item) => (
-            <MenuItemCard key={item.id} item={item} />
+            <div key={item.id} className="w-64 shrink-0 snap-start sm:w-72">
+              <MenuItemCard item={item} />
+            </div>
           ))}
         </div>
       </main>
 
       {!hideFooter && <SiteFooter className="py-4" />}
     </div>
+  );
+}
+
+const TYPEWRITER_TEXT = Array.from("🙏 እኛን ስለመረጡ እናመሰናለን");
+
+function TypewriterBadge() {
+  const [count, setCount] = useState(0);
+  const [deleting, setDeleting] = useState(false);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    const schedule = (fn, ms) => {
+      timerRef.current = setTimeout(fn, ms);
+    };
+
+    if (!deleting) {
+      if (count < TYPEWRITER_TEXT.length) {
+        schedule(() => setCount((c) => c + 1), 110);
+      } else {
+        schedule(() => setDeleting(true), 2200);
+      }
+    } else {
+      if (count > 0) {
+        schedule(() => setCount((c) => c - 1), 55);
+      } else {
+        schedule(() => setDeleting(false), 600);
+      }
+    }
+
+    return () => clearTimeout(timerRef.current);
+  }, [count, deleting]);
+
+  const displayed = TYPEWRITER_TEXT.slice(0, count).join("");
+  const done = !deleting && count === TYPEWRITER_TEXT.length;
+
+  return (
+    <span
+      className={`shrink-0 flex items-center rounded-full px-4 py-2.5 ring-1 shadow-sm transition-all duration-300 ${
+        done
+          ? "bg-linear-to-br from-emerald-100 to-teal-100 ring-emerald-300 shadow-emerald-200"
+          : "bg-linear-to-br from-emerald-50 to-teal-50 ring-emerald-200"
+      }`}
+      style={{ minWidth: "9rem" }}
+    >
+      <span className="text-sm font-bold text-emerald-700 sm:text-base whitespace-nowrap">
+        {displayed}
+        <span
+          className="ml-px inline-block animate-pulse text-emerald-400"
+          style={{ opacity: done ? 0 : 1 }}
+        >
+          |
+        </span>
+      </span>
+    </span>
   );
 }
